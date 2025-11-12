@@ -1,9 +1,3 @@
 # Project_OS
 
-Tjenare gubbar, uppdatering från min branch. //Sebbe
-
-Halloj //Samuel
-
-HejHej // Lucas
-
-Halllå eller // Mattias
+Välkommen till OS-projekt Tyskland där vi kommer mäta och visualisera olika data och tidslinjer. Denna text kommer uppdateras.
