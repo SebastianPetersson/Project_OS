@@ -5,7 +5,7 @@ import hashlib
 
 #Funtion för Uppgift 1: Anonymisera kolumnen med idrottarnas namn.
 def hashed_names(olympics_df):
-
+    """Anonymizes the column named 'Names' in the selected column. Input your dataframe as is."""
     germany_all = olympics_df[olympics_df["NOC"].isin(["GER", "GDR", "FRG"])].copy()
     germany_all["Name"] = germany_all["Name"].apply(lambda x: hashlib.sha256(x.encode("utf-8")).hexdigest())
     germany_all = germany_all.rename(columns = {"Name": "Hash_Names"}).reset_index(drop = True)
@@ -14,8 +14,8 @@ def hashed_names(olympics_df):
 
 
 #Funktion för Uppgift 1: Antal medaljer per OS.
-def medals_each_year(olympics_df, noc_list, title = "Number of Medals per Olympic Games"):
-
+def medals_each_year(olympics_df, noc_list, title):
+    """Makes a barplot over medals won each year. Takes input for dataframe, list of NOC's, and title. """
     df = olympics_df[(olympics_df["NOC"].isin(noc_list)) & (olympics_df["Medal"].notna())].copy()
     medals_breakdown = df.groupby(["Year", "NOC"])["Medal"].count().reset_index()
     
@@ -30,7 +30,7 @@ def medals_each_year(olympics_df, noc_list, title = "Number of Medals per Olympi
 
 #Funktion för Uppgift 2: Medaljfördelning mellan länder i sporterna (Luge).
 def medals_per_column(olympics_df, sport, palette = "Set2"):
-
+    """Makes a barplot for medals won per country. Takes input for dataframe, selected sport, and palette."""
     df = olympics_df[(olympics_df["Sport"] == sport) & (olympics_df["Medal"].notna())].copy()
     medals = df.groupby(["NOC", "Medal"]).size().reset_index(name = "Count")
     
