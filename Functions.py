@@ -10,7 +10,8 @@ def hashed_names(olympics_df):
     germany_all["Name"] = germany_all["Name"].apply(lambda x: hashlib.sha256(x.encode("utf-8")).hexdigest())
     germany_all = germany_all.rename(columns = {"Name": "Hash_Names"}).reset_index(drop = True)
     germany = germany_all[germany_all["NOC"] == "GER"]
-    return germany
+    return germany, germany_all
+
 
 #Funktion för Uppgift 1: Antal medaljer per OS.
 def medals_each_year(olympics_df, noc_list, title = "Number of Medals per Olympic Games"):
