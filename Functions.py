@@ -192,3 +192,62 @@ def medal_distribution(olympics_df, sport):
     plt.xticks(rotation = 45)
     plt.legend(title = "Medal")
     plt.show()
+
+
+def visualize_country_stats(df, country):
+
+    country_data = df[df["Team"] == country].copy()
+
+    medal_data = country_data[country_data["Medal"].notna()]
+    medal_counts = (
+        medal_data.groupby("Sport")["Medal"]
+        .count()
+        .sort_values(ascending=False)
+        .head(10)
+    )
+
+    plt.figure(figsize = (14, 6))
+
+    plt.subplot(1, 2, 1)
+    sns.barplot(x = medal_counts.values, y = medal_counts.index, color = "steelblue")
+    plt.title(f"Topp 10 sporter - medaljfördelning ({country})")
+    plt.xlabel("Antal medaljer")
+    plt.ylabel("Sport")
+
+    plt.subplot(1, 2, 2)
+    sns.histplot(country_data["Age"].dropna(), kde = True, bins = 20, color = "skyblue")
+    plt.title(f"Åldersfördelning bland idrottare - {country}")
+    plt.xlabel("Ålder")
+    plt.ylabel("Antal idrottare")
+
+    plt.tight_layout()
+    plt.show()
+
+def visualize_sport_stats(df, sport, top_n = 10):
+
+    sport_data = df[df["Sport"] == sport].copy()
+
+    medal_data = sport_data[sport_data["Medal"].notna()]
+    medal_counts = (
+        medal_data.groupby("Team")["Medal"]
+        .count()
+        .sort_values(ascending=False)
+        .head(top_n)
+    )
+
+    plt.figure(figsize = (14, 6))
+
+    plt.subplot(1, 2, 1)
+    sns.barplot(x = medal_counts.values, y = medal_counts.index, color = "steelblue")
+    plt.title(f"Topp {top_n} länder - medaljfördelning ({sport})")
+    plt.xlabel("Antal medaljer")
+    plt.ylabel("Land")
+
+    plt.subplot(1, 2, 2)
+    sns.histplot(sport_data["Age"].dropna(), kde = True, bins = 20, color = "skyblue")
+    plt.title(f"Åldersfördelning bland idrottare - {sport}")
+    plt.xlabel("Ålder")
+    plt.ylabel("Antal idrottare")
+
+    plt.tight_layout()
+    plt.show()
