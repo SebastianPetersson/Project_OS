@@ -3,7 +3,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import hashlib
 import plotly
-import plotly_express as px
+import plotly.express as px
 
 #Funtion för Uppgift 1: Anonymisera kolumnen med idrottarnas namn.
 def hashed_names(olympics_df):
