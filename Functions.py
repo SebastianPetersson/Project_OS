@@ -48,6 +48,28 @@ def medals_each_year(olympics_df, noc_list, title):
     plt.legend(title = "Country Code")
     plt.show()
 
+# Funktion för uppgift 1: Histogram över åldrar
+def plot_age_distribution(germany):
+    germany_age = germany[germany['Age'].notna()]
+    male = germany_age[germany_age['Sex'] == 'M']
+    female = germany_age[germany_age['Sex'] == 'F']
+
+    fig, axes = plt.subplots(1, 2, figsize=(12,6), sharey=True)
+
+    sns.histplot(male['Age'], bins=20, kde=True, color='steelblue', ax=axes[0])
+    axes[0].set_title('Male athletes')
+
+    sns.histplot(female['Age'], bins=20, kde=True, color='hotpink', ax=axes[1])
+    axes[1].set_title('Female athletes')
+
+    for ax in axes:
+        ax.set_xlabel('Age')
+        ax.set_ylabel('Number of athletes')
+
+    plt.suptitle('Age distribution', fontsize=18)
+    plt.tight_layout()
+
+
 #Funktion för Uppgift 1: Skapa fler plots...
 def plot_summer_vs_winter(olympics_df, noc_list=["GER", "GDR", "FRG"]):
     """Plots a bar chart comparing summer vs winter olympic medals for given NOC code."""
