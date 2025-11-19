@@ -2,6 +2,8 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 import hashlib
+import plotly
+import plotly_express as px
 
 #Funtion för Uppgift 1: Anonymisera kolumnen med idrottarnas namn.
 def hashed_names(olympics_df):
@@ -28,6 +30,17 @@ def medals_each_year(olympics_df, noc_list, title):
     plt.legend(title = "Country Code")
     plt.show()
 
+def sex_dist_years(df, years):
+    """Plots pie charts showing gender distribution for selected Olympic years."""
+
+    fig, ax = plt.subplots(1, len(years), figsize=(16, 5))
+
+    for i, year in enumerate(years):
+        year_data = df[df['Year'] == year]['Sex'].value_counts()
+        year_data = year_data.reindex(['M', 'F'], fill_value=0)
+        ax[i].pie(year_data, labels = year_data.index, autopct = '%1.1f%%',startangle=90, colors = ['grey', 'orange'])
+        ax[i].set_title(f'Könsfördelning {year}')
+
 #Funktion för Uppgift 2: Medaljfördelning mellan länder i sporterna (Luge).
 def medals_per_column(olympics_df, sport, palette = "Set2"):
     """Makes a barplot for medals won per country. Takes input for dataframe, selected sport, and palette."""
@@ -36,6 +49,92 @@ def medals_per_column(olympics_df, sport, palette = "Set2"):
     
     plt.figure(figsize = (12, 6))
     sns.barplot(data = medals, x = "NOC", y = "Count", hue = "Medal", palette = palette)
+    plt.title(f"Medal Distribution in {sport} by Country (Olympic History)")
+    plt.ylabel("Number of Medals")
+    plt.xlabel("Country (NOC)")
+    plt.xticks(rotation = 45)
+    plt.legend(title = "Medal")
+    plt.show()
+
+
+def age_dist_per_sex(global_df, germany_df, country, sport):
+    """Makes a histplot over the chosen sports agespan, one for the chosen countrys male and female contenders, and one for the sports global agespan. \n
+    Input a global dataframe, the dataframe for your selected country, the country name, and the chosen sport."""
+    
+    german_men = germany_df[(germany_df['Sport'] == sport) & (germany_df['Sex'] == 'M')]
+    german_females = germany_df[(germany_df['Sport'] == sport) & (germany_df['Sex'] == 'F')]
+    global_df = global_df[global_df['Sport'] == sport]
+    men_mean = german_men['Age'].mean()
+    female_mean = german_females['Age'].mean()
+    global_mean = global_df['Age'].mean()
+
+    fig, ax = plt.subplots(1, 2, figsize=(14, 6), sharex=True)
+    fig.suptitle(f'{country} - age distribution in {sport}', fontsize=20)
+
+    sns.histplot(data=german_men, x = 'Age', kde=True, stat='percent', bins = 20, color='black', alpha = 0.8, label = 'men', ax = ax[0])
+    sns.histplot(data=german_females, x = 'Age', kde=True, stat='percent', bins = 20, color='orange', alpha = 0.5, label = 'women', ax = ax[0])
+    ax[0].set(title=f'Agespan for {country} in {sport} - men and females', xlabel='Age',  ylabel='Contenders (percent)')
+    ax[0].axvline(men_mean, color = 'black', linestyle = '--', label = f'men mean age: {men_mean:.1f}')
+    ax[0].axvline(female_mean, color = 'orange', linestyle = '--', label = f'female mean age: {female_mean:.1f}')
+    ax[0].grid(True)
+    ax[0].legend()
+
+    sns.histplot(data=global_df, x = 'Age', bins=20, kde=True, stat='percent', color='skyblue', label = 'global age', alpha=0.7, ax=ax[1])
+    ax[1].set(title=f'Agespan globally in {sport}', xlabel='Age', ylabel='Contenders (percent)')
+    ax[1].axvline(global_mean, color = 'blue', linestyle = '--', label = f'mean age: {global_mean:.1f}')
+    ax[1].grid(True)
+    ax[1].legend()
+    plt.show()
+
+
+def plot_efficiency(global_df, germany_df, country, sport):
+    """Plots the efficiency of the selected countrys contenders in the selected sport, and gives a comparison to the global efficiency. \n
+    Input one global dataframe, one dataframe for the country and the selected sport."""
+
+    global_df = global_df[global_df['Sport'] == sport]
+    german_men = germany_df[(germany_df['Sport'] == sport) & (germany_df['Sex'] == 'M')]
+    german_females = germany_df[(germany_df['Sport'] == sport) & (germany_df['Sex'] == 'F')]
+
+    global_eff = global_df['Medal'].notna().sum() / len(global_df) * 100
+    male_eff = german_men['Medal'].notna().sum() / len(german_men) * 100
+    female_eff = german_females['Medal'].notna().sum() / len(german_females) * 100
+
+    grouped = pd.DataFrame({
+        'Group': ['Germany - Men', 'Germany - Women', 'Global'],
+        'Efficiency': [male_eff, female_eff, global_eff]
+        })
+    fig = px.bar(grouped, x='Group', y='Efficiency', color='Group',
+                 text=grouped['Efficiency'].round(1),
+                 title=f'{country} – Medal Efficiency in {sport}',
+                 labels={'Efficiency': 'Medaljer per 100 deltagare'},
+                 color_discrete_sequence=['black', 'orange', 'skyblue'])
+    
+    fig.update_traces(textposition='outside')
+    fig.update_layout(showlegend=False, yaxis_range=[0, max(grouped['Efficiency']) * 1.2])
+    fig.show()
+
+def medal_distribution(olympics_df, sport):
+    """Makes a barplot for medals, and types of medals, per country for the top 10 countrys in the sport. Includes Germany regardless of performance. \n
+     Takes input for dataframe and selected sport."""
+
+    palette = {
+        'Gold': "#DABE1E",
+        'Silver': '#C0C0C0',
+        'Bronze': '#CD7F32'
+    }
+
+    df = olympics_df[(olympics_df['Sport'] == sport) & (olympics_df['Medal'].notna())].copy()
+    total_medals = df.groupby('NOC').size().sort_values(ascending=False)
+
+    top_nocs = total_medals.head(10).index.tolist()
+    if 'GER' not in top_nocs:
+        top_nocs.append('GER')
+    
+    medals = df[df['NOC'].isin(top_nocs)]
+    medals = medals.groupby(['NOC', 'Medal']).size().reset_index(name='Count')
+
+    plt.figure(figsize = (12, 6))
+    sns.barplot(data = medals, x = 'NOC', y = 'Count', hue = 'Medal', palette = palette)
     plt.title(f"Medal Distribution in {sport} by Country (Olympic History)")
     plt.ylabel("Number of Medals")
     plt.xlabel("Country (NOC)")
