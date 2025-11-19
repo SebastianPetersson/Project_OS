@@ -48,21 +48,6 @@ def medals_each_year(olympics_df, noc_list, title):
     plt.legend(title = "Country Code")
     plt.show()
 
-<<<<<<< HEAD
-#Funktion för Uppgift 1: Skapa fler plots...
-def plot_summer_vs_winter(olympics_df, noc_list=["GER", "GDR", "FRG"]):
-    """Plots a bar chart comparing summer vs winter olympic medals for given NOC code."""
-    df = olympics_df[(olympics_df["NOC"].isin(noc_list)) & (olympics_df["Medal"].notna())].copy()
-
-    season_medals = df.groupby("Season")["Medal"].count().reset_index()
-
-    plt.figure(figsize=(8,4))
-    sns.barplot(data = season_medals, x = "Season", y = "Medal", edgecolor = "black", hue = "Season", palette = "tab10")
-    plt.title("GER, GDR, FRG - Summer vs Winter Olympic Medals")
-    plt.xlabel("Season")
-    plt.ylabel("Number of Medals")
-    plt.show()
-=======
 def sex_dist_years(df, years):
     """Plots pie charts showing gender distribution for selected Olympic years."""
 
@@ -73,7 +58,6 @@ def sex_dist_years(df, years):
         year_data = year_data.reindex(['M', 'F'], fill_value=0)
         ax[i].pie(year_data, labels = year_data.index, autopct = '%1.1f%%',startangle=90, colors = ['grey', 'orange'])
         ax[i].set_title(f'Könsfördelning {year}')
->>>>>>> main
 
 #Funktion för Uppgift 2: Medaljfördelning mellan länder i sporterna (Luge).
 def medals_per_column(olympics_df, sport, palette = "Set2"):
@@ -90,26 +74,6 @@ def medals_per_column(olympics_df, sport, palette = "Set2"):
     plt.legend(title = "Medal")
     plt.show()
 
-<<<<<<< HEAD
-#Funktion för Uppgift 2: Skapa fler plots...
-def medal_distribution_weight_height(olympics_df, sport = "Ski Jumping"):
-    """Plots histogram of medal winning athletes based on their weight and height."""
-    df = olympics_df[(olympics_df["Sport"] == sport) & (olympics_df["Medal"].notna())].copy()
-    fig, axes = plt.subplots(1, 2, figsize = (14, 6))
-
-    sns.histplot(data = df, x = "Weight", bins = 15, ax = axes[0], color = "skyblue")
-    axes[0].set_title(f"Medals vs. Weight in {sport}")
-    axes[0].set_xlabel("Weight (kg)")
-    axes[0].set_ylabel("Number of Medals")
-
-    sns.histplot(data = df, x = "Height", bins = 15, ax = axes[1], color = "lightgreen")
-    axes[1].set_title(f"Medals vs. Height in {sport}")
-    axes[1].set_xlabel("Height (cm)")
-    axes[1].set_ylabel("Number of Medals")
-
-    plt.tight_layout()
-    plt.show()
-=======
 
 def age_dist_per_sex(global_df, germany_df, country, sport):
     """Makes a histplot over the chosen sports agespan, one for the chosen countrys male and female contenders, and one for the sports global agespan. \n
@@ -195,4 +159,3 @@ def medal_distribution(olympics_df, sport):
     plt.xticks(rotation = 45)
     plt.legend(title = "Medal")
     plt.show()
->>>>>>> main
