@@ -69,7 +69,6 @@ def plot_age_distribution(germany):
     plt.suptitle('Age distribution', fontsize=18)
     plt.tight_layout()
 
-
 #Funktion för Uppgift 1: Skapa fler plots...
 def plot_summer_vs_winter(olympics_df, noc_list=["GER", "GDR", "FRG"]):
     """Plots a bar chart comparing summer vs winter olympic medals for given NOC code."""
@@ -95,21 +94,6 @@ def sex_dist_years(df, years):
         ax[i].pie(year_data, labels = year_data.index, autopct = '%1.1f%%',startangle=90, colors = ['grey', 'orange'])
         ax[i].set_title(f'Könsfördelning {year}')
 
-#Funktion för Uppgift 2: Medaljfördelning mellan länder i sporterna (Luge).
-def medals_per_column(olympics_df, sport, palette = "Set2"):
-    """Makes a barplot for medals won per country. Takes input for dataframe, selected sport, and palette."""
-    df = olympics_df[(olympics_df["Sport"] == sport) & (olympics_df["Medal"].notna())].copy()
-    medals = df.groupby(["NOC", "Medal"]).size().reset_index(name = "Count")
-    
-    plt.figure(figsize = (12, 6))
-    sns.barplot(data = medals, x = "NOC", y = "Count", hue = "Medal", palette = palette)
-    plt.title(f"Medal Distribution in {sport} by Country (Olympic History)")
-    plt.ylabel("Number of Medals")
-    plt.xlabel("Country (NOC)")
-    plt.xticks(rotation = 45)
-    plt.legend(title = "Medal")
-    plt.show()
-
 #Funktion för Uppgift 2: Skapa fler plots...
 def medal_distribution_weight_height(olympics_df, sport = "Ski Jumping"):
     """Plots histogram of medal winning athletes based on their weight and height."""
@@ -128,7 +112,6 @@ def medal_distribution_weight_height(olympics_df, sport = "Ski Jumping"):
 
     plt.tight_layout()
     plt.show()
-
 
 def age_dist_per_sex(global_df, germany_df, country, sport):
     """Makes a histplot over the chosen sports agespan, one for the chosen countrys male and female contenders, and one for the sports global agespan. \n
@@ -158,7 +141,6 @@ def age_dist_per_sex(global_df, germany_df, country, sport):
     ax[1].grid(True)
     ax[1].legend()
     plt.show()
-
 
 def plot_efficiency(global_df, germany_df, country, sport):
     """Plots the efficiency of the selected countrys contenders in the selected sport, and gives a comparison to the global efficiency. \n
@@ -214,7 +196,6 @@ def medal_distribution(olympics_df, sport):
     plt.xticks(rotation = 45)
     plt.legend(title = "Medal")
     plt.show()
-
 
 def visualize_country_stats(df, country):
 
