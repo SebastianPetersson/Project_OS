@@ -37,6 +37,8 @@ def top_german_sports(germany_df, top_n = 10, palette = "Blues_d"):
 def medals_each_year(olympics_df, noc_list, title):
     """Makes a barplot over medals won each year. Takes input for dataframe, list of NOC's, and title. """
     df = olympics_df[(olympics_df["NOC"].isin(noc_list)) & (olympics_df["Medal"].notna())].copy()
+    df = df.drop_duplicates(subset=["Year", "Event", "Medal", "NOC"])
+
     medals_breakdown = df.groupby(["Year", "NOC"])["Medal"].count().reset_index()
     
     plt.figure(figsize=(14,7))
