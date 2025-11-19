@@ -85,17 +85,35 @@ def plot_summer_vs_winter(olympics_df, noc_list=["GER", "GDR", "FRG"]):
     plt.ylabel("Number of Medals")
     plt.show()
 
-def sex_dist_years(df, years):
-    """Plots pie charts showing gender distribution for selected Olympic years."""
+def sex_distribution(df1, df2, years):
+    """Plots pie charts showing gender distribution for selected Olympic years. Takes 2 dataframes, in this case one for West Germany and one for East Germany."""
 
-    fig, ax = plt.subplots(1, len(years), figsize=(16, 5))
+    fig, ax = plt.subplots(2, len(years), figsize=(16, 5))
+    fig.suptitle("Gender Distribution in Olympic Teams During Germany's Division: East(GDR) vs West(FRG)", fontsize=15, weight = 'bold')
 
     for i, year in enumerate(years):
-        year_data = df[df['Year'] == year]['Sex'].value_counts()
-        year_data = year_data.reindex(['M', 'F'], fill_value=0)
-        ax[i].pie(year_data, labels = year_data.index, autopct = '%1.1f%%',startangle=90, colors = ['grey', 'orange'])
-        ax[i].set_title(f'Könsfördelning {year}')
+        west_data = df1[df1['Year'] == year]['Sex'].value_counts().reindex(['M', 'F'], fill_value=0)
+        ax[0, i].pie(west_data, labels=west_data.index, autopct='%1.1f%%',startangle=90, colors=['grey', 'orange'])
+        ax[0, i].set_title(f'FRG {year}')
 
+        east_data = df2[df2['Year'] == year]['Sex'].value_counts().reindex(['M', 'F'], fill_value=0)
+        ax[1, i].pie(east_data, labels=east_data.index, autopct='%1.1f%%', startangle=90, colors=['grey', 'orange'])
+        ax[1, i].set_title(f'GDR {year}')
+
+def sex_dist_all(df1, df2, df3):
+    east_sex = df1['Sex'].value_counts()
+    west_sex = df2['Sex'].value_counts()
+    germany_sex_compare = df3[df3['Year'].between(1956, 1996)] #Tre OS innan och efter splittringen för någorlunda värdig jämförelse
+
+    fig, axes = plt.subplots(1, 3, figsize=(10, 5))
+    fig.suptitle('Sex distribution comparison', fontsize=20)
+    axes[0].pie(east_sex, labels = west_sex.index, autopct='%1.1f%%', startangle=90, colors = ['grey', 'orange'])
+    axes[0].set_title('West Germany (FRG, 1968-1988)')
+    axes[1].pie(west_sex, labels = east_sex.index, autopct='%1.1f%%', startangle=90, colors = ['grey', 'orange'])
+    axes[1].set_title('East Germany (GDR, 1968-1988)')
+    axes[2].pie(germany_sex_compare['Sex'].value_counts(), autopct = '%1.1f%%', startangle=90, colors = ['grey', 'orange'])
+    axes[2].set_title('Germany (1956-1996)')
+    plt.tight_layout()
 #Funktion för Uppgift 2: Skapa fler plots...
 def medal_distribution_weight_height(olympics_df, sport = "Ski Jumping"):
     """Plots histogram of medal winning athletes based on their weight and height."""
@@ -256,3 +274,19 @@ def visualize_sport_stats(df, sport, top_n = 10):
 
     plt.tight_layout()
     plt.show()
+
+def plot_participants(df):
+    participants = df.groupby(["Year", "NOC", "Season"])["Hash_Names"].nunique().reset_index(name='Participants')
+
+    fig = px.line(participants,
+              x = 'Year', 
+              y = 'Participants', 
+              color = 'NOC', 
+              line_dash='Season',
+              title='Participants over the years')
+
+    fig.update_layout(
+        title={'text' : 'German participants through the years','x':0.5,'xanchor':'center'},
+        xaxis_title='År', yaxis_title='Antal deltagare', legend_title='Nation'
+    )
+    fig.show()
