@@ -180,7 +180,7 @@ def plot_efficiency(global_df, germany_df, country, sport):
         })
     fig = px.bar(grouped, x='Group', y='Efficiency', color='Group',
                  text=grouped['Efficiency'].round(1),
-                 title=f'{country} – Medal Efficiency in {sport}',
+                 title=f'{country} - Medal Efficiency in {sport}',
                  labels={'Efficiency': 'Medaljer per 100 deltagare'},
                  color_discrete_sequence=['black', 'orange', 'skyblue'])
     
