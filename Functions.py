@@ -4,6 +4,9 @@ import matplotlib.pyplot as plt
 import hashlib
 import plotly
 import plotly.express as px
+from plotly.subplots import make_subplots
+import plotly.graph_objects as go
+
 
 #Funtion för Uppgift 1: Anonymisera kolumnen med idrottarnas namn.
 def hashed_names(olympics_df):
@@ -14,41 +17,40 @@ def hashed_names(olympics_df):
     germany = germany_all[germany_all["NOC"] == "GER"]
     return germany, germany_all
 
-#Funktion för uppgift 1: De sporter landet fått flest medaljer i.
-def top_german_sports(germany_df, top_n = 10, palette = "Blues_d"):
+
+def top_german_sports(germany_df, top_n = 10):
     """Makes a barplot showing which sports that Germany has won the most medals in. It filters the DataFrame
     to include only rows with non-null medals and groups the data by sport. And selects the top N sports."""
+
     german_medals = germany_df[germany_df["Medal"].notna()].copy()
     medals_per_sport = german_medals.groupby("Sport")["Medal"].count().reset_index()
     top_sports = medals_per_sport.sort_values(by = "Medal", ascending = False).reset_index(drop = True).head(top_n)
 
-    plt.figure(figsize = (12, 6))
-    sns.barplot(data = top_sports, x = "Sport", y = "Medal", hue = "Sport", palette = palette, dodge = False)
-    plt.title(f"Top {top_n} German Sports by Medal Count")
-    plt.ylabel("Number of Medals")
-    plt.xlabel("Sport")
-    plt.xticks(rotation = 45)
-    plt.legend([],[], frameon=False)
-    plt.tight_layout()
-    plt.show()
-    return top_sports
+    fig = px.bar(
+        top_sports,
+        x = "Sport",
+        y = "Medal",
+        color = "Sport",
+        color_discrete_sequence = px.colors.sequential.Viridis,
+        title = f"Top {top_n} German Sports by Medal Count")
+    
+    fig.update_layout(xaxis_title = "Sport", yaxis_title = "Number of Medals", legend_title = "", xaxis_tickangle = -45)
+    
+    return fig, top_sports
 
-#Funktion för Uppgift 1: Antal medaljer per OS.
+#Samuel
 def medals_each_year(olympics_df, noc_list, title):
     """Makes a barplot over medals won each year. Takes input for dataframe, list of NOC's, and title. """
+
     df = olympics_df[(olympics_df["NOC"].isin(noc_list)) & (olympics_df["Medal"].notna())].copy()
-    df = df.drop_duplicates(subset=["Year", "Event", "Medal", "NOC"])
+    df = df.drop_duplicates(subset = ["Year", "Event", "Medal", "NOC"])
 
     medals_breakdown = df.groupby(["Year", "NOC"])["Medal"].count().reset_index()
+
+    fig = px.bar(medals_breakdown, x = "Year", y = "Medal", color = "NOC", barmode = "group", title = title, labels = {"Year": "Year", "Medal": "Number of Medals", "NOC": "Country Code"})
     
-    plt.figure(figsize=(14,7))
-    sns.barplot(data = medals_breakdown, x = "Year", y = "Medal", hue = "NOC")
-    plt.title(title)
-    plt.xlabel("Year")
-    plt.ylabel("Number of Medals")
-    plt.xticks(rotation = 45)
-    plt.legend(title = "Country Code")
-    plt.show()
+    fig.update_layout(xaxis_tickangle = -45, legend_title = "Country Code")
+    return fig, medals_breakdown
 
 # Funktion för uppgift 1: Histogram över åldrar
 def plot_age_distribution(germany):
@@ -71,19 +73,31 @@ def plot_age_distribution(germany):
     plt.suptitle('Age distribution', fontsize=18)
     plt.tight_layout()
 
-#Funktion för Uppgift 1: Skapa fler plots...
-def plot_summer_vs_winter(olympics_df, noc_list=["GER", "GDR", "FRG"]):
-    """Plots a bar chart comparing summer vs winter olympic medals for given NOC code."""
+#Samuel
+def summer_vs_winter(olympics_df, noc_list = ["GER", "GDR", "FRG"]):
+
     df = olympics_df[(olympics_df["NOC"].isin(noc_list)) & (olympics_df["Medal"].notna())].copy()
 
     season_medals = df.groupby("Season")["Medal"].count().reset_index()
 
-    plt.figure(figsize=(8,4))
-    sns.barplot(data = season_medals, x = "Season", y = "Medal", edgecolor = "black", hue = "Season", palette = "tab10")
-    plt.title("GER, GDR, FRG - Summer vs Winter Olympic Medals")
-    plt.xlabel("Season")
-    plt.ylabel("Number of Medals")
-    plt.show()
+    fig = px.bar(
+        season_medals,
+        x = "Season",
+        y = "Medal",
+        color = "Season",
+        color_discrete_sequence = px.colors.qualitative.Set1,
+        title="GER, GDR, FRG - Summer vs Winter Olympic Medals",
+        labels={"Season": "Season", "Medal": "Number of Medals"}
+    )
+
+    fig.update_layout(
+        xaxis_title = "Season",
+        yaxis_title = "Number of Medals",
+        showlegend = False,
+        width = 700,
+        height = 400)
+    return fig, season_medals
+
 
 def sex_distribution(df1, df2, years):
     """Plots pie charts showing gender distribution for selected Olympic years. Takes 2 dataframes, in this case one for West Germany and one for East Germany."""
@@ -100,6 +114,7 @@ def sex_distribution(df1, df2, years):
         ax[1, i].pie(east_data, labels=east_data.index, autopct='%1.1f%%', startangle=90, colors=['grey', 'orange'])
         ax[1, i].set_title(f'GDR {year}')
 
+
 def sex_dist_all(df1, df2, df3):
     east_sex = df1['Sex'].value_counts()
     west_sex = df2['Sex'].value_counts()
@@ -114,24 +129,35 @@ def sex_dist_all(df1, df2, df3):
     axes[2].pie(germany_sex_compare['Sex'].value_counts(), autopct = '%1.1f%%', startangle=90, colors = ['grey', 'orange'])
     axes[2].set_title('Germany (1956-1996)')
     plt.tight_layout()
-#Funktion för Uppgift 2: Skapa fler plots...
-def medal_distribution_weight_height(olympics_df, sport = "Ski Jumping"):
+
+#Samuel
+def medal_distribution_weight_height(olympics_df, sport="Ski Jumping"):
     """Plots histogram of medal winning athletes based on their weight and height."""
+
     df = olympics_df[(olympics_df["Sport"] == sport) & (olympics_df["Medal"].notna())].copy()
-    fig, axes = plt.subplots(1, 2, figsize = (14, 6))
 
-    sns.histplot(data = df, x = "Weight", bins = 15, ax = axes[0], color = "skyblue")
-    axes[0].set_title(f"Medals vs. Weight in {sport}")
-    axes[0].set_xlabel("Weight (kg)")
-    axes[0].set_ylabel("Number of Medals")
+    fig = make_subplots(rows = 1, cols = 2, subplot_titles = (f"Medals vs. Weight in {sport}",
+                                                        f"Medals vs. Height in {sport}"))
+    
+    weight_hist = go.Histogram(x = df["Weight"], nbinsx = 15, marker_color = "skyblue")
+    fig.add_trace(weight_hist, row = 1, col = 1)
+    
+    height_hist = go.Histogram(x = df["Height"], nbinsx = 15, marker_color="lightgreen")
+    fig.add_trace(height_hist, row = 1, col = 2)
+    
+    fig.update_layout(
+        title_text = f"Medal Distribution by Weight and Height in {sport}",
+        xaxis_title = "Weight (kg)",
+        yaxis_title = "Number of Medals",
+        xaxis2_title = "Height (cm)",
+        yaxis2_title = "Number of Medals",
+        bargap = 0.1,
+        showlegend = False,
+        width = 1000,
+        height = 500
+    )
+    return fig, df
 
-    sns.histplot(data = df, x = "Height", bins = 15, ax = axes[1], color = "lightgreen")
-    axes[1].set_title(f"Medals vs. Height in {sport}")
-    axes[1].set_xlabel("Height (cm)")
-    axes[1].set_ylabel("Number of Medals")
-
-    plt.tight_layout()
-    plt.show()
 
 def age_dist_per_sex(global_df, germany_df, country, sport):
     """Makes a histplot over the chosen sports agespan, one for the chosen countrys male and female contenders, and one for the sports global agespan. \n
@@ -162,6 +188,7 @@ def age_dist_per_sex(global_df, germany_df, country, sport):
     ax[1].legend()
     plt.show()
 
+
 def plot_efficiency(global_df, germany_df, country, sport):
     """Plots the efficiency of the selected countrys contenders in the selected sport, and gives a comparison to the global efficiency. \n
     Input one global dataframe, one dataframe for the country and the selected sport."""
@@ -187,6 +214,7 @@ def plot_efficiency(global_df, germany_df, country, sport):
     fig.update_traces(textposition='outside')
     fig.update_layout(showlegend=False, yaxis_range=[0, max(grouped['Efficiency']) * 1.2])
     fig.show()
+
 
 def medal_distribution(olympics_df, sport):
     """Makes a barplot for medals, and types of medals, per country for the top 10 countrys in the sport. Includes Germany regardless of performance. \n
@@ -217,7 +245,8 @@ def medal_distribution(olympics_df, sport):
     plt.legend(title = "Medal")
     plt.show()
 
-def visualize_country_stats(df, country):
+#Samuel
+def stats_for_country(df, country):
 
     country_data = df[df["Team"] == country].copy()
 
@@ -225,55 +254,86 @@ def visualize_country_stats(df, country):
     medal_counts = (
         medal_data.groupby("Sport")["Medal"]
         .count()
-        .sort_values(ascending=False)
-        .head(10)
-    )
+        .sort_values(ascending = False)
+        .head(10))
 
-    plt.figure(figsize = (14, 6))
+    fig = make_subplots(
+        rows = 1, cols = 2,
+        subplot_titles = (f"Topp 10 sporter - medaljfördelning ({country})", 
+        f"Åldersfördelning bland idrottare - {country}"))
+    
+    bar_trace = go.Bar(
+        x = medal_counts.values,
+        y = medal_counts.index,
+        orientation = "h",
+        marker_color = "steelblue")
+    
+    fig.add_trace(bar_trace, row = 1, col = 1)
+    
+    age_trace = go.Histogram(
+        x = country_data["Age"].dropna(),
+        nbinsx = 20,
+        marker_color = "skyblue")
+    
+    fig.add_trace(age_trace, row = 1, col = 2)
 
-    plt.subplot(1, 2, 1)
-    sns.barplot(x = medal_counts.values, y = medal_counts.index, color = "steelblue")
-    plt.title(f"Topp 10 sporter - medaljfördelning ({country})")
-    plt.xlabel("Antal medaljer")
-    plt.ylabel("Sport")
+    fig.update_layout(
+        title_text = f"Olympic Stats for {country}",
+        xaxis_title = "Antal medaljer",
+        yaxis_title = "Sport",
+        xaxis2_title = "Ålder",
+        yaxis2_title = "Antal idrottare",
+        bargap = 0.1,
+        showlegend = False,
+        width = 1000,
+        height = 500)
+    
+    return fig, medal_counts
 
-    plt.subplot(1, 2, 2)
-    sns.histplot(country_data["Age"].dropna(), kde = True, bins = 20, color = "skyblue")
-    plt.title(f"Åldersfördelning bland idrottare - {country}")
-    plt.xlabel("Ålder")
-    plt.ylabel("Antal idrottare")
-
-    plt.tight_layout()
-    plt.show()
-
-def visualize_sport_stats(df, sport, top_n = 10):
+#Samuel
+def stats_for_sport(df, sport, top_n = 10):
 
     sport_data = df[df["Sport"] == sport].copy()
-
+ 
     medal_data = sport_data[sport_data["Medal"].notna()]
     medal_counts = (
         medal_data.groupby("Team")["Medal"]
         .count()
-        .sort_values(ascending=False)
-        .head(top_n)
-    )
+        .sort_values(ascending = False)
+        .head(top_n))
+    
+    fig = make_subplots(
+        rows = 1, cols = 2,
+        subplot_titles = (f"Topp {top_n} länder - medaljfördelning ({sport})",
+        f"Åldersfördelning bland idrottare - {sport}"))
+    
+    bar_trace = go.Bar(
+        x = medal_counts.values,
+        y = medal_counts.index,
+        orientation = "h",
+        marker_color = "steelblue")
+    fig.add_trace(bar_trace, row = 1, col = 1)
+    
+    age_trace = go.Histogram(
+        x = sport_data["Age"].dropna(),
+        nbinsx = 20,
+        marker_color = "skyblue")
+    
+    fig.add_trace(age_trace, row = 1, col = 2)
 
-    plt.figure(figsize = (14, 6))
+    fig.update_layout(
+        title_text = f"Olympic Stats for {sport}",
+        xaxis_title = "Antal medaljer",
+        yaxis_title = "Land",
+        xaxis2_title = "Ålder",
+        yaxis2_title = "Antal idrottare",
+        bargap = 0.1,
+        showlegend = False,
+        width = 1000,
+        height = 500)
+    
+    return fig, medal_counts
 
-    plt.subplot(1, 2, 1)
-    sns.barplot(x = medal_counts.values, y = medal_counts.index, color = "steelblue")
-    plt.title(f"Topp {top_n} länder - medaljfördelning ({sport})")
-    plt.xlabel("Antal medaljer")
-    plt.ylabel("Land")
-
-    plt.subplot(1, 2, 2)
-    sns.histplot(sport_data["Age"].dropna(), kde = True, bins = 20, color = "skyblue")
-    plt.title(f"Åldersfördelning bland idrottare - {sport}")
-    plt.xlabel("Ålder")
-    plt.ylabel("Antal idrottare")
-
-    plt.tight_layout()
-    plt.show()
 
 def plot_participants(df):
     participants = df.groupby(["Year", "NOC", "Season"])["Hash_Names"].nunique().reset_index(name='Participants')
