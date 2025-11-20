@@ -8,7 +8,7 @@ from plotly.subplots import make_subplots
 import plotly.graph_objects as go
 
 
-#Funtion för Uppgift 1: Anonymisera kolumnen med idrottarnas namn.
+#Funktion för Uppgift 1: Anonymisera kolumnen med idrottarnas namn.
 def hashed_names(olympics_df):
     """Anonymizes the column named 'Names' in the selected column. Input your dataframe as is."""
     germany_all = olympics_df[olympics_df["NOC"].isin(["GER", "GDR", "FRG"])].copy()
@@ -16,7 +16,6 @@ def hashed_names(olympics_df):
     germany_all = germany_all.rename(columns = {"Name": "Hash_Names"}).reset_index(drop = True)
     germany = germany_all[germany_all["NOC"] == "GER"]
     return germany, germany_all
-
 
 def top_german_sports(germany_df, top_n = 10):
     """Makes a barplot showing which sports that Germany has won the most medals in. It filters the DataFrame
@@ -98,37 +97,76 @@ def summer_vs_winter(olympics_df, noc_list = ["GER", "GDR", "FRG"]):
         height = 400)
     return fig, season_medals
 
+#Sebastian
+def sex_dist_all(df):
+    df_west = df[(df['NOC'] == 'FRG') & (df['Year'].between(1968, 1988))]
+    df_east = df[(df['NOC'] == 'GDR') & (df['Year'].between(1968, 1988))]
+    df_unified = df[(df['NOC'] == 'GER') & (df['Year'].between(1956, 1996))]
 
-def sex_distribution(df1, df2, years):
-    """Plots pie charts showing gender distribution for selected Olympic years. Takes 2 dataframes, in this case one for West Germany and one for East Germany."""
+    sex_data = {
+        'West Germany (FRG, 1968-1988)': df_west['Sex'].value_counts().reindex(['M', 'F'], fill_value=0),
+        'East Germany (GDR, 1968-1988)': df_east['Sex'].value_counts().reindex(['M', 'F'], fill_value=0),
+        'Germany (1956-1996)': df_unified['Sex'].value_counts().reindex(['M', 'F'], fill_value=0)
+    }
 
-    fig, ax = plt.subplots(2, len(years), figsize=(16, 5))
-    fig.suptitle("Gender Distribution in Olympic Teams During Germany's Division: East(GDR) vs West(FRG)", fontsize=15, weight = 'bold')
+    fig = make_subplots(
+        rows=1, cols=3,
+        specs=[[{'type': 'domain'}]*3],
+        subplot_titles=list(sex_data.keys())
+    )
+    
+    for i, (title, counts) in enumerate(sex_data.items()):
+        fig.add_trace(go.Pie(
+            labels=counts.index,
+            values=counts.values,
+            marker_colors=['grey', 'orange'],
+            name=title,
+            showlegend=True
+        ), row=1, col=i+1)
+
+    fig.update_layout(title_text='Gender Distribution Comparison: East (GDR), West (FRG), and Unified Germany.',
+                      title_x = 0.5)
+    return fig
+
+#Sebastian
+def sex_dist_divided(df, years):
+    """Creates a 2-row subplot of pie charts showing gender distribution for selected Olympic years. More or less years can be selected."""
+
+    east_germany = df[df['NOC'] == 'GDR'].copy()
+    west_germany = df[df['NOC'] == 'FRG'].copy()
+
+    fig = make_subplots(
+        rows=2, cols=len(years),
+        specs=[[{'type': 'domain'}]*len(years)]*2,
+        subplot_titles=[f'FRG {year}' for year in years] + [f'GDR {year}' for year in years]
+    )
 
     for i, year in enumerate(years):
-        west_data = df1[df1['Year'] == year]['Sex'].value_counts().reindex(['M', 'F'], fill_value=0)
-        ax[0, i].pie(west_data, labels=west_data.index, autopct='%1.1f%%',startangle=90, colors=['grey', 'orange'])
-        ax[0, i].set_title(f'FRG {year}')
+        west_data = west_germany[west_germany['Year'] == year]['Sex'].value_counts().reindex(['M', 'F'], fill_value=0)
+        fig.add_trace(go.Pie(
+            labels=west_data.index,
+            values=west_data.values,
+            marker_colors=['grey', 'orange'],
+            name=f'FRG {year}',
+            showlegend=False
+        ), row=1, col=i+1)
 
-        east_data = df2[df2['Year'] == year]['Sex'].value_counts().reindex(['M', 'F'], fill_value=0)
-        ax[1, i].pie(east_data, labels=east_data.index, autopct='%1.1f%%', startangle=90, colors=['grey', 'orange'])
-        ax[1, i].set_title(f'GDR {year}')
+        east_data = east_germany[east_germany['Year'] == year]['Sex'].value_counts().reindex(['M', 'F'], fill_value=0)
+        fig.add_trace(go.Pie(
+            labels=east_data.index,
+            values=east_data.values,
+            marker_colors=['grey', 'orange'],
+            name=f'GDR {year}',
+            showlegend=False
+        ), row=2, col=i+1)
 
-
-def sex_dist_all(df1, df2, df3):
-    east_sex = df1['Sex'].value_counts()
-    west_sex = df2['Sex'].value_counts()
-    germany_sex_compare = df3[df3['Year'].between(1956, 1996)] #Tre OS innan och efter splittringen för någorlunda värdig jämförelse
-
-    fig, axes = plt.subplots(1, 3, figsize=(10, 5))
-    fig.suptitle('Sex distribution comparison', fontsize=20)
-    axes[0].pie(east_sex, labels = west_sex.index, autopct='%1.1f%%', startangle=90, colors = ['grey', 'orange'])
-    axes[0].set_title('West Germany (FRG, 1968-1988)')
-    axes[1].pie(west_sex, labels = east_sex.index, autopct='%1.1f%%', startangle=90, colors = ['grey', 'orange'])
-    axes[1].set_title('East Germany (GDR, 1968-1988)')
-    axes[2].pie(germany_sex_compare['Sex'].value_counts(), autopct = '%1.1f%%', startangle=90, colors = ['grey', 'orange'])
-    axes[2].set_title('Germany (1956-1996)')
-    plt.tight_layout()
+    fig.update_layout(
+        height=600,
+        width=300 * len(years),
+        title_text="Gender Distribution in Olympic Teams During Germany's Division: East (GDR) vs West (FRG)",
+        title_x=0.5
+    )
+    return fig
 
 #Samuel
 def medal_distribution_weight_height(olympics_df, sport="Ski Jumping"):
@@ -158,37 +196,60 @@ def medal_distribution_weight_height(olympics_df, sport="Ski Jumping"):
     )
     return fig, df
 
-
+#Sebastian
 def age_dist_per_sex(global_df, germany_df, country, sport):
     """Makes a histplot over the chosen sports agespan, one for the chosen countrys male and female contenders, and one for the sports global agespan. \n
     Input a global dataframe, the dataframe for your selected country, the country name, and the chosen sport."""
-    
+
     german_men = germany_df[(germany_df['Sport'] == sport) & (germany_df['Sex'] == 'M')]
-    german_females = germany_df[(germany_df['Sport'] == sport) & (germany_df['Sex'] == 'F')]
+    german_women = germany_df[(germany_df['Sport'] == sport) & (germany_df['Sex'] == 'F')]
     global_df = global_df[global_df['Sport'] == sport]
     men_mean = german_men['Age'].mean()
-    female_mean = german_females['Age'].mean()
+    women_mean = german_women['Age'].mean()
     global_mean = global_df['Age'].mean()
 
-    fig, ax = plt.subplots(1, 2, figsize=(14, 6), sharex=True)
-    fig.suptitle(f'{country} - age distribution in {sport}', fontsize=20)
+    fig = make_subplots(
+        rows=1, cols=2,
+        subplot_titles=[
+            f"{country} – Age Distribution in {sport}",
+            f"Global Age Distribution in {sport}"
+        ],
+        shared_yaxes=True
+    )
 
-    sns.histplot(data=german_men, x = 'Age', kde=True, stat='percent', bins = 20, color='black', alpha = 0.8, label = 'men', ax = ax[0])
-    sns.histplot(data=german_females, x = 'Age', kde=True, stat='percent', bins = 20, color='orange', alpha = 0.5, label = 'women', ax = ax[0])
-    ax[0].set(title=f'Agespan for {country} in {sport} - men and females', xlabel='Age',  ylabel='Contenders (percent)')
-    ax[0].axvline(men_mean, color = 'black', linestyle = '--', label = f'men mean age: {men_mean:.1f}')
-    ax[0].axvline(female_mean, color = 'orange', linestyle = '--', label = f'female mean age: {female_mean:.1f}')
-    ax[0].grid(True)
-    ax[0].legend()
+    fig.add_trace(go.Histogram(x=german_men['Age'], name='Men', nbinsx=20, histnorm='percent', marker_color='black', opacity=0.5,
+        hovertemplate='Group=Men<br>Age=%{x}<br>percent=%{y}<extra></extra>'
+    ), row=1, col=1)
 
-    sns.histplot(data=global_df, x = 'Age', bins=20, kde=True, stat='percent', color='skyblue', label = 'global age', alpha=0.7, ax=ax[1])
-    ax[1].set(title=f'Agespan globally in {sport}', xlabel='Age', ylabel='Contenders (percent)')
-    ax[1].axvline(global_mean, color = 'blue', linestyle = '--', label = f'mean age: {global_mean:.1f}')
-    ax[1].grid(True)
-    ax[1].legend()
-    plt.show()
+    fig.add_trace(go.Histogram(x=german_women['Age'], name='Women', nbinsx=20, histnorm='percent', marker_color='orange', opacity=0.5,
+        hovertemplate='Group=Women<br>Age=%{x}<br>percent=%{y}<extra></extra>'
+    ), row=1, col=1)
 
+    fig.add_trace(go.Histogram(x=global_df['Age'], name='Global', nbinsx=20, histnorm='percent', marker_color='skyblue',
+        hovertemplate='Age=%{x}<br>percent=%{y}<extra></extra>'
+    ), row=1, col=2)
 
+    #Linjer som visar mean.
+    fig.add_vline(x=men_mean, line_dash='dash', line_color='black',
+                  annotation_text=f"Men mean: {men_mean:.1f}", annotation_position="top right", row=1, col=1)
+    fig.add_vline(x=women_mean, line_dash='dash', line_color='orange',
+                  annotation_text=f"Women mean: {women_mean:.1f}", annotation_position="top left", row=1, col=1)
+    fig.add_vline(x=global_mean, line_dash='dash', line_color='blue',
+                  annotation_text=f"Global mean: {global_mean:.1f}", annotation_position="top right", row=1, col=2)
+
+    fig.update_layout(barmode='overlay', title_text=f"{country} - Age Distribution in {sport}", 
+        title_x=0.5,
+        height=500,
+        width=1000,
+        legend_title_text='Group',
+        xaxis_title='Age',
+        xaxis2_title='Age',
+        yaxis_title='Contenders (percent)'
+    )
+
+    return fig
+
+#Sebastian
 def plot_efficiency(global_df, germany_df, country, sport):
     """Plots the efficiency of the selected countrys contenders in the selected sport, and gives a comparison to the global efficiency. \n
     Input one global dataframe, one dataframe for the country and the selected sport."""
@@ -215,35 +276,37 @@ def plot_efficiency(global_df, germany_df, country, sport):
     fig.update_layout(showlegend=False, yaxis_range=[0, max(grouped['Efficiency']) * 1.2])
     fig.show()
 
-
-def medal_distribution(olympics_df, sport):
-    """Makes a barplot for medals, and types of medals, per country for the top 10 countrys in the sport. Includes Germany regardless of performance. \n
-     Takes input for dataframe and selected sport."""
-
+#Sebastian
+def medal_distribution(df, sport): #EGEN note: denna ska göras till dropdown-meny, så att användaren kan välja olika länder!
+    """Creates an interactive bar chart of medal counts per country for a given sport using Plotly."""
     palette = {
         'Gold': "#DABE1E",
         'Silver': '#C0C0C0',
         'Bronze': '#CD7F32'
     }
 
-    df = olympics_df[(olympics_df['Sport'] == sport) & (olympics_df['Medal'].notna())].copy()
+    df = df[(df['Sport'] == sport) & (df['Medal'].notna())].copy()
     total_medals = df.groupby('NOC').size().sort_values(ascending=False)
 
     top_nocs = total_medals.head(10).index.tolist()
     if 'GER' not in top_nocs:
         top_nocs.append('GER')
-    
+
     medals = df[df['NOC'].isin(top_nocs)]
     medals = medals.groupby(['NOC', 'Medal']).size().reset_index(name='Count')
 
-    plt.figure(figsize = (12, 6))
-    sns.barplot(data = medals, x = 'NOC', y = 'Count', hue = 'Medal', palette = palette)
-    plt.title(f"Medal Distribution in {sport} by Country (Olympic History)")
-    plt.ylabel("Number of Medals")
-    plt.xlabel("Country (NOC)")
-    plt.xticks(rotation = 45)
-    plt.legend(title = "Medal")
-    plt.show()
+    fig = px.bar(
+        medals,
+        x='NOC',
+        y='Count',
+        color='Medal',
+        color_discrete_map=palette,
+        title=f"Medal Distribution in {sport} by Country (Olympic History)",
+        labels={'NOC': 'Country (NOC)', 'Count': 'Number of Medals'}
+    )
+
+    fig.update_layout(barmode='stack', xaxis_tickangle=-45)
+    return fig
 
 #Samuel
 def stats_for_country(df, country):
@@ -334,7 +397,7 @@ def stats_for_sport(df, sport, top_n = 10):
     
     return fig, medal_counts
 
-
+#Sebastian
 def plot_participants(df):
     participants = df.groupby(["Year", "NOC", "Season"])["Hash_Names"].nunique().reset_index(name='Participants')
 
