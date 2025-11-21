@@ -131,14 +131,44 @@ def sex_dist_all(df):
     return fig
 
 #Sebastian
-def sex_dist_divided(df1, df2, years):
-    fig = make_subplots(rows=2, cols=len(years), specs=[[{'type':'domain'}]*len(years)]*2)
+def sex_dist_divided(df, years):
+    """Creates a 2-row subplot of pie charts showing gender distribution for selected Olympic years. More or less years can be selected."""
+
+    east_germany = df[df['NOC'] == 'GDR'].copy()
+    west_germany = df[df['NOC'] == 'FRG'].copy()
+
+    fig = make_subplots(
+        rows=2, cols=len(years),
+        specs=[[{'type': 'domain'}]*len(years)]*2,
+        subplot_titles=[f'FRG {year}' for year in years] + [f'GDR {year}' for year in years]
+    )
+
     for i, year in enumerate(years):
-        west_data = df1[df1['Year']==year]['Sex'].value_counts().reindex(['M','F'], fill_value=0)
-        east_data = df2[df2['Year']==year]['Sex'].value_counts().reindex(['M','F'], fill_value=0)
-        fig.add_trace(go.Pie(labels=west_data.index, values=west_data.values), row=1, col=i+1)
-        fig.add_trace(go.Pie(labels=east_data.index, values=east_data.values), row=2, col=i+1)
-    return fig  
+        west_data = west_germany[west_germany['Year'] == year]['Sex'].value_counts().reindex(['M', 'F'], fill_value=0)
+        fig.add_trace(go.Pie(
+            labels=west_data.index,
+            values=west_data.values,
+            marker_colors=['grey', 'orange'],
+            name=f'FRG {year}',
+            showlegend=False
+        ), row=1, col=i+1)
+
+        east_data = east_germany[east_germany['Year'] == year]['Sex'].value_counts().reindex(['M', 'F'], fill_value=0)
+        fig.add_trace(go.Pie(
+            labels=east_data.index,
+            values=east_data.values,
+            marker_colors=['grey', 'orange'],
+            name=f'GDR {year}',
+            showlegend=False
+        ), row=2, col=i+1)
+
+    fig.update_layout(
+        height=600,
+        width=300 * len(years),
+        title_text="Gender Distribution in Olympic Teams During Germany's Division: East (GDR) vs West (FRG)",
+        title_x=0.5
+    )
+    return fig
 
 #Samuel
 def medal_distribution_weight_height(olympics_df, sport="Ski Jumping"):
@@ -222,7 +252,7 @@ def age_dist_per_sex(global_df, germany_df, country, sport):
     return fig
 
 #Sebastian #Note: Något skevt händer. Gör en temporär fix längst ned.
-def plot_efficiency_original(global_df, germany_df, country, sport):
+def plot_efficiency(global_df, germany_df, country, sport):
     """Plots the efficiency of the selected countrys contenders in the selected sport, and gives a comparison to the global efficiency. \n
     Input one global dataframe, one dataframe for the country and the selected sport."""
 
@@ -246,11 +276,10 @@ def plot_efficiency_original(global_df, germany_df, country, sport):
     
     fig.update_traces(textposition='outside')
     fig.update_layout(showlegend=False, yaxis_range=[0, max(grouped['Efficiency']) * 1.2])
-    fig.show()
     return fig
 
 #Sebastian #Note: Något skevt händer även här. Gör en temporät fix längst ned.
-def medal_distribution_original(df, sport): #EGEN note: denna ska göras till dropdown-meny, så att användaren kan välja olika länder!
+def medal_distribution(df, sport): #EGEN note: denna ska göras till dropdown-meny, så att användaren kan välja olika länder!
     """Creates an interactive bar chart of medal counts per country for a given sport using Plotly."""
     palette = {
         'Gold': "#DABE1E",
@@ -436,28 +465,3 @@ def medal_e_v_ger(east_germany, west_germany):
         xaxis3 = dict(tickangle = 45)
     )
     return fig
-
-
-
-
-
-
-#Temprär fix för originalet högre upp.
-def plot_efficiency(global_df, germany_df, country, sport):
-    global_df = global_df[global_df['Sport']==sport]
-    german_men = germany_df[(germany_df['Sport']==sport)&(germany_df['Sex']=='M')]
-    german_women = germany_df[(germany_df['Sport']==sport)&(germany_df['Sex']=='F')]
-    global_eff = global_df['Medal'].notna().sum()/len(global_df)*100
-    male_eff = german_men['Medal'].notna().sum()/len(german_men)*100
-    female_eff = german_women['Medal'].notna().sum()/len(german_women)*100
-    df = pd.DataFrame({'Group':['Men','Women','Global'],
-                       'Efficiency':[male_eff,female_eff,global_eff]})
-    fig = px.bar(df, x='Group', y='Efficiency', text=df['Efficiency'].round(1))
-    return fig
-
-#Temporär fix för originalet högre upp.
-def medal_distribution(df, sport):
-    df = df[(df['Sport']==sport)&(df['Medal'].notna())]
-    medals = df.groupby(['NOC','Medal']).size().reset_index(name='Count')
-    fig = px.bar(medals, x='NOC', y='Count', color='Medal', barmode='stack')
-    return fig, medals
