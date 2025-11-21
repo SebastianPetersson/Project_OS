@@ -20,9 +20,10 @@ fig8 = Functions.medal_e_v_ger(df[df["NOC"] == "GDR"], df[df["NOC"] == "FRG"])
 fig9 = Functions.plot_efficiency(df, germany, "Germany", "Ski Jumping")
 fig10 = Functions.medal_distribution(df, "Ski Jumping")
 fig11 = Functions.age_dist_per_sex(df, germany, "Germany", "Ski Jumping")
-fig12, _ = Functions.stats_for_country(df, "Germany")
-fig13, _ = Functions.stats_for_sport(df, "Ski Jumping")
-fig14, _ = Functions.medal_distribution_weight_height(df, sport = "Ski Jumping")
+fig12, _ = Functions.stats_for_sport(df, "Ski Jumping")
+fig13, _ = Functions.medal_distribution_weight_height(df, sport = "Ski Jumping")
+fig14 = Functions.sex_biat(df)
+
 
 layout = html.Div([
     html.H1("Germany Olympic Performance Dashboard", style = {"textAlign": "center", "fontFamily": "Helvetica", "color": "black"}),
@@ -59,5 +60,5 @@ layout = html.Div([
     dcc.Graph(id = "age-graph"),
     dcc.Graph(id = "sport-stats-graph"),
     dcc.Graph(id = "weight-height-graph"),
-    dcc.Graph(figure = fig12),
+    dcc.Graph(figure = fig14),
 ])

@@ -11,7 +11,7 @@ app.layout = layout
      Output("sport-stats-graph", "figure"),
      Output("weight-height-graph", "figure")],
     Input("sport-dropdown", "value"),
-    Input("Sport-dropdown2", "value")
+    # Input("Sport-dropdown2", "value")
 )
 
 def update_graphs(selected_sport):
