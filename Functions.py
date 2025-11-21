@@ -6,6 +6,7 @@ import plotly
 import plotly.express as px
 from plotly.subplots import make_subplots
 import plotly.graph_objects as go
+import numpy as np
 
 
 #Funktion för Uppgift 1: Anonymisera kolumnen med idrottarnas namn.
@@ -51,7 +52,7 @@ def medals_each_year(olympics_df, noc_list, title):
     fig.update_layout(xaxis_tickangle = -45, legend_title = "Country Code")
     return fig, medals_breakdown
 
-# Funktion för uppgift 1: Histogram över åldrar
+#Lucas
 def plot_age_distribution(germany):
     df = germany[germany["Age"].notna()]
 
@@ -131,14 +132,47 @@ def sex_dist_all(df):
     return fig
 
 #Sebastian
-def sex_dist_divided(df1, df2, years):
-    fig = make_subplots(rows=2, cols=len(years), specs=[[{'type':'domain'}]*len(years)]*2)
+def sex_dist_divided(df, years):
+    """Creates a 2-row subplot of pie charts showing gender distribution for selected Olympic years."""
+
+    east_germany = df[df['NOC'] == 'GDR'].copy()
+    west_germany = df[df['NOC'] == 'FRG'].copy()
+
+    specs = [[{'type': 'domain'}] * len(years) for _ in range(2)]
+
+    fig = make_subplots(
+        rows=2,
+        cols=len(years),
+        specs=specs,
+        subplot_titles=[f'FRG {year}' for year in years] + [f'GDR {year}' for year in years]
+    )
+
     for i, year in enumerate(years):
-        west_data = df1[df1['Year']==year]['Sex'].value_counts().reindex(['M','F'], fill_value=0)
-        east_data = df2[df2['Year']==year]['Sex'].value_counts().reindex(['M','F'], fill_value=0)
-        fig.add_trace(go.Pie(labels=west_data.index, values=west_data.values), row=1, col=i+1)
-        fig.add_trace(go.Pie(labels=east_data.index, values=east_data.values), row=2, col=i+1)
-    return fig  
+        west_data = west_germany[west_germany['Year'] == year]['Sex'].value_counts().reindex(['M', 'F'], fill_value=0)
+        fig.add_trace(go.Pie(
+            labels=west_data.index,
+            values=west_data.values,
+            marker_colors=['grey', 'orange'],
+            name=f'FRG {year}',
+            showlegend=False
+        ), row=1, col=i+1)
+
+        east_data = east_germany[east_germany['Year'] == year]['Sex'].value_counts().reindex(['M', 'F'], fill_value=0)
+        fig.add_trace(go.Pie(
+            labels=east_data.index,
+            values=east_data.values,
+            marker_colors=['grey', 'orange'],
+            name=f'GDR {year}',
+            showlegend=False
+        ), row=2, col=i+1)
+
+    fig.update_layout(
+        height=600,
+        width=300 * len(years),
+        title_text="Gender Distribution in Olympic Teams During Germany's Division: East (GDR) vs West (FRG)",
+        title_x=0.5
+    )
+    return fig
 
 #Samuel
 def medal_distribution_weight_height(olympics_df, sport="Ski Jumping"):
@@ -246,7 +280,6 @@ def plot_efficiency_original(global_df, germany_df, country, sport):
     
     fig.update_traces(textposition='outside')
     fig.update_layout(showlegend=False, yaxis_range=[0, max(grouped['Efficiency']) * 1.2])
-    fig.show()
     return fig
 
 #Sebastian #Note: Något skevt händer även här. Gör en temporät fix längst ned.
@@ -437,6 +470,123 @@ def medal_e_v_ger(east_germany, west_germany):
     )
     return fig
 
+#Mattias
+def sex_biat(olympics_df: pd.DataFrame):
+    """Bringin in the information pinpointing what I am looking for (Biathlon) and sepereting them into the gender of the particepantes"""
+
+    required_cols = {"Sport", "Medal", "Sex", "NOC", "Age"}
+    missing = required_cols - set(olympics_df.columns)
+    if missing:
+        raise ValueError(f"Input dataframe saknar kolumner: {', '.join(sorted(missing))}")
+
+    biat = olympics_df.loc[olympics_df["Sport"] == "Biathlon"].copy()
+    biat = biat.dropna(subset=["Medal", "Sex", "NOC"])
+
+    m_biat = biat.loc[biat["Sex"] == "M"].copy()
+    f_biat = biat.loc[biat["Sex"] == "F"].copy()
+
+    m_biat = m_biat.dropna(subset=["Age"])
+    f_biat = f_biat.dropna(subset=["Age"])
+
+    noc_counts = (
+        biat.groupby(["NOC", "Sex"])
+        .size()
+        .reset_index(name="count")
+        .sort_values(["NOC", "Sex"])
+    )
+
+    fig = make_subplots(
+        rows=1, cols=3,
+        column_widths=[0.42, 0.29, 0.29],
+        subplot_titles=[
+            "Biathlon medals by NOC and gender",
+            "Age distribution — male medalists",
+            "Age distribution — female medalists"
+        ]
+    )
+
+    noc_list = sorted(noc_counts["NOC"].unique())
+    m_counts = noc_counts[noc_counts["Sex"] == "M"].set_index("NOC").reindex(noc_list)["count"].fillna(0)
+    f_counts = noc_counts[noc_counts["Sex"] == "F"].set_index("NOC").reindex(noc_list)["count"].fillna(0)
+
+    fig.add_trace(
+        go.Bar(
+            x=noc_list,
+            y=m_counts,
+            name="Male",
+            marker_color="grey",
+            hovertemplate="NOC=%{x}<br>Medals=%{y}<extra></extra>"
+        ),
+        row=1, col=1
+    )
+    fig.add_trace(
+        go.Bar(
+            x=noc_list,
+            y=f_counts,
+            name="Female",
+            marker_color="orange",
+            hovertemplate="NOC=%{x}<br>Medals=%{y}<extra></extra>"
+        ),
+        row=1, col=1
+    )
+
+    fig.add_trace(
+        go.Histogram(
+            x=m_biat["Age"],
+            nbinsx=20,
+            marker_color="grey",
+            name="Male ages",
+            hovertemplate="Age=%{x}<br>Count=%{y}<extra></extra>"
+        ),
+        row=1, col=2
+    )
+
+    fig.add_trace(
+        go.Histogram(
+            x=f_biat["Age"],
+            nbinsx=20,
+            marker_color="orange",
+            name="Female ages",
+            hovertemplate="Age=%{x}<br>Count=%{y}<extra></extra>"
+        ),
+        row=1, col=3
+    )
+
+    if len(m_biat) > 0:
+        m_mean = float(np.nanmean(m_biat["Age"]))
+        fig.add_vline(
+            x=m_mean, line_dash="dash", line_color="black",
+            annotation_text=f"Mean: {m_mean:.1f}", annotation_position="top right",
+            row=1, col=2
+        )
+    if len(f_biat) > 0:
+        f_mean = float(np.nanmean(f_biat["Age"]))
+        fig.add_vline(
+            x=f_mean, line_dash="dash", line_color="black",
+            annotation_text=f"Mean: {f_mean:.1f}", annotation_position="top right",
+            row=1, col=3
+        )
+
+    fig.update_layout(
+        title_text="Biathlon medalists — gender and age",
+        title_x=0.5,
+        height=500,
+        width=1200,
+        barmode="group",
+        legend_title_text="Group",
+        margin=dict(l=40, r=20, t=60, b=40)
+    )
+
+    fig.update_xaxes(title_text="NOC", row=1, col=1)
+    fig.update_yaxes(title_text="Medals (count)", row=1, col=1)
+
+    fig.update_xaxes(title_text="Age", row=1, col=2)
+    fig.update_yaxes(title_text="Count", row=1, col=2)
+
+    fig.update_xaxes(title_text="Age", row=1, col=3)
+    fig.update_yaxes(title_text="Count", row=1, col=3)
+
+    return fig
 
 
 
