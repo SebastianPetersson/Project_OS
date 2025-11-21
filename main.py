@@ -4,6 +4,7 @@ from layout import layout, df, germany
 import Functions
 
 app = dash.Dash(__name__)
+server = app.server
 app.layout = layout
 
 @app.callback(
