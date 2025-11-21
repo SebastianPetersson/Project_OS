@@ -53,16 +53,34 @@ def medals_each_year(olympics_df, noc_list, title):
 
 # Funktion för uppgift 1: Histogram över åldrar
 def plot_age_distribution(germany):
-    germany_age = germany[germany['Age'].notna()]
-    male = germany_age[germany_age['Sex'] == 'M']
-    female = germany_age[germany_age['Sex'] == 'F']
+    df = germany[germany["Age"].notna()]
 
+<<<<<<< HEAD
     fig = make_subplots(rows=1, cols=2, subplot_titles=("Male athletes", "Female athletes"))
 
     fig.add_trace(go.Histogram(x=male['Age'], nbinsx=20, marker_color='steelblue'), row=1, col=1)
     fig.add_trace(go.Histogram(x=female['Age'], nbinsx=20, marker_color='hotpink'), row=1, col=2)
 
     fig.update_layout(title_text="Age distribution", showlegend=False)
+=======
+    male = df[df["Sex"] == "M"]
+    female = df[df["Sex"] == "F"]
+
+    fig = make_subplots(rows=1, cols=2, subplot_titles=["Male athletes", "Female athletes"])
+    male_fig = px.histogram(male, x="Age", nbins=20, opacity=0.75, color_discrete_sequence=["steelblue"])
+    female_fig = px.histogram(female, x="Age", nbins=20, opacity=0.75, color_discrete_sequence=["hotpink"])
+
+    for trace in male_fig.data:
+        fig.add_trace(trace, row=1, col=1)
+
+    for trace in female_fig.data:
+        fig.add_trace(trace, row=1, col=2)
+
+    fig.update_layout(title="Age distribution", showlegend=False, height=500, width=1000)
+    fig.update_xaxes(title="Age")
+    fig.update_yaxes(title="Number of athletes", row=1, col=1)
+
+>>>>>>> 654282e7deed2b4f73659e5e04b298374a019e56
     return fig
 
 #Samuel
