@@ -13,16 +13,17 @@ fig1, _ = Functions.top_german_sports(germany)
 fig2, _ = Functions.medals_each_year(df, ["GER", "FRG", "GDR"], "German Olympic Medals per Year")
 fig3, _ = Functions.plot_participants(germany_all)
 fig4 = Functions.plot_age_distribution(germany)
-fig5, _ = Functions.summer_vs_winter(df)
-fig6 = Functions.sex_dist_divided(df[df["NOC"] == "FRG"], df[df["NOC"] == "GDR"], [1968, 1972, 1976, 1980, 1984, 1988])
-fig7 = Functions.sex_dist_all(df)
-fig8 = Functions.medal_e_v_ger(df[df["NOC"] == "GDR"], df[df["NOC"] == "FRG"])
-fig9 = Functions.plot_efficiency(df, germany, "Germany", "Ski Jumping")
+fig5 = Functions.plot_efficiency(df, germany, "Germany", "Ski Jumping")
+fig6, _ = Functions.summer_vs_winter(df)
+fig7 = Functions.sex_dist_divided(germany_all, [1968, 1972, 1980, 1988])
+fig8 = Functions.sex_dist_all(df)
+fig9 = Functions.medal_e_v_ger(df[df["NOC"] == "GDR"], df[df["NOC"] == "FRG"])
 fig10, _ = Functions.medal_distribution(df, "Ski Jumping")
 fig11 = Functions.age_dist_per_sex(df, germany, "Germany", "Ski Jumping")
-fig12, _ = Functions.stats_for_country(df, "Germany")
+#fig12, _ = Functions.stats_for_country(df, "Germany")
 fig13, _ = Functions.stats_for_sport(df, "Ski Jumping")
 fig14, _ = Functions.medal_distribution_weight_height(df, sport = "Ski Jumping")
+fig15 = Functions.sex_biat(df)
 
 layout = html.Div([
     html.H1("Germany Olympic Performance Dashboard", style = {"textAlign": "center", "fontFamily": "Helvetica", "color": "black"}),
@@ -34,12 +35,10 @@ layout = html.Div([
     dcc.Graph(figure = fig3),
     dcc.Graph(figure = fig4),
     dcc.Graph(figure = fig5),
-
-    html.H3("Sex Distribution (FRG vs GDR)", style = {"textAlign": "center", "fontFamily": "Helvetica", "color": "black"}), #Lägg titel i function maybe.
-    dcc.Graph(figure = fig6),
+    dcc.Graph(figure = fig6), #Buggar sidan så endast denna visas.
     dcc.Graph(figure = fig7),
     dcc.Graph(figure = fig8),
-    dcc.Graph(figure = fig9), #Buggar sidan så endast denna visas.
+    dcc.Graph(figure = fig9),
     dcc.Graph(figure = fig10), #Får bara felmeddelande.
 
     html.H2("Uppgift 2 - Sportstatistik", style = {"fontFamily": "Helvetica", "color": "black"}),
@@ -60,5 +59,6 @@ layout = html.Div([
     dcc.Graph(id = "age-graph"),
     dcc.Graph(id = "sport-stats-graph"),
     dcc.Graph(id = "weight-height-graph"),
-    dcc.Graph(figure = fig12),
+    dcc.Graph(figure = fig15),  
+    #dcc.Graph(figure = fig12),
 ])
