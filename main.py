@@ -9,16 +9,18 @@ app.layout = layout
 @app.callback(
     [Output("age-graph", "figure"),
      Output("sport-stats-graph", "figure"),
-     Output("weight-height-graph", "figure")],
+     Output("weight-height-graph", "figure"),
+     Output("gender-and-age", "figure")],
     Input("sport-dropdown", "value"),
     # Input("Sport-dropdown2", "value")
 )
 
 def update_graphs(selected_sport):
     fig11 = Functions.age_dist_per_sex(df, germany, "Germany", selected_sport)
-    fig13, _ = Functions.stats_for_sport(df, selected_sport)
-    fig14, _ = Functions.medal_distribution_weight_height(df, sport = selected_sport)
-    return fig11, fig13, fig14
+    fig12, _ = Functions.stats_for_sport(df, selected_sport)
+    fig13, _ = Functions.medal_distribution_weight_height(df, sport = selected_sport)
+    fig14 = Functions.sex_biat(df, sport = selected_sport)
+    return fig11, fig12, fig13, fig14  
 
 
 if __name__ == "__main__":
