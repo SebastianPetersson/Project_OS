@@ -1,10 +1,9 @@
 import pandas as pd
-import matplotlib.pyplot as plt
 import hashlib
+import plotly
 import plotly.express as px
 from plotly.subplots import make_subplots
 import plotly.graph_objects as go
-import numpy as np
 
 
 #Funktion för Uppgift 1: Anonymisera kolumnen med idrottarnas namn.
@@ -50,7 +49,7 @@ def medals_each_year(olympics_df, noc_list, title):
     fig.update_layout(xaxis_tickangle = -45, legend_title = "Country Code")
     return fig, medals_breakdown
 
-#Lucas
+# Funktion för uppgift 1: Histogram över åldrar
 def plot_age_distribution(germany):
     df = germany[germany["Age"].notna()]
 
@@ -423,7 +422,6 @@ def plot_participants(df):
 #Mattias
 def medal_e_v_ger(east_germany, west_germany):
 
-
     east = east_germany[['Year', 'Medal']].dropna(subset=['Medal'])
     east_medals = east.groupby(['Year','Medal']).size().unstack(fill_value = 0)
 
@@ -464,73 +462,4 @@ def medal_e_v_ger(east_germany, west_germany):
         xaxis2 = dict(tickangle = 45),
         xaxis3 = dict(tickangle = 45)
     )
-    return fig
-
-def sex_biat(olympics_df: pd.DataFrame, sport: str = "Biathlon"):
-    required_cols = {"Sport", "Medal", "Sex", "NOC", "Age"}
-    missing = required_cols - set(olympics_df.columns)
-    if missing:
-        raise ValueError(f"Input dataframe saknar kolumner: {', '.join(sorted(missing))}")
-
-    sport_df = olympics_df.loc[olympics_df["Sport"] == sport].copy()
-    sport_df = sport_df.dropna(subset=["Medal", "Sex", "NOC"])
-
-    m_df = sport_df.loc[sport_df["Sex"] == "M"].dropna(subset=["Age"]).copy()
-    f_df = sport_df.loc[sport_df["Sex"] == "F"].dropna(subset=["Age"]).copy()
-
-    noc_counts = (
-        sport_df.groupby(["NOC", "Sex"])
-        .size()
-        .reset_index(name="count")
-        .sort_values(["NOC", "Sex"])
-    )
-
-    fig = make_subplots(
-        rows=1, cols=3,
-        column_widths=[0.42, 0.29, 0.29],
-        subplot_titles=[
-            f"{sport} medals by NOC and gender",
-            f"Male medalists ({sport})",
-            f"Female medalists ({sport})"
-        ]
-    )
-
-    noc_list = sorted(noc_counts["NOC"].unique())
-    m_counts = noc_counts[noc_counts["Sex"] == "M"].set_index("NOC").reindex(noc_list)["count"].fillna(0)
-    f_counts = noc_counts[noc_counts["Sex"] == "F"].set_index("NOC").reindex(noc_list)["count"].fillna(0)
-
-    fig.add_trace(go.Bar(x=noc_list, y=m_counts, name="Male", marker_color="grey"), row=1, col=1)
-    fig.add_trace(go.Bar(x=noc_list, y=f_counts, name="Female", marker_color="orange"), row=1, col=1)
-
-    fig.add_trace(go.Histogram(x=m_df["Age"], nbinsx=20, marker_color="grey", name="Male ages"), row=1, col=2)
-    fig.add_trace(go.Histogram(x=f_df["Age"], nbinsx=20, marker_color="orange", name="Female ages"), row=1, col=3)
-
-    if len(m_df) > 0:
-        m_mean = float(np.nanmean(m_df["Age"]))
-        fig.add_vline(x=m_mean, line_dash="dash", line_color="black",
-                      annotation_text=f"Mean: {m_mean:.1f}", annotation_position="top right",
-                      row=1, col=2)
-    if len(f_df) > 0:
-        f_mean = float(np.nanmean(f_df["Age"]))
-        fig.add_vline(x=f_mean, line_dash="dash", line_color="black",
-                      annotation_text=f"Mean: {f_mean:.1f}", annotation_position="top right",
-                      row=1, col=3)
-
-    fig.update_layout(
-        title_text=f"{sport} medalists — gender and age",
-        title_x=0.5,
-        height=500,
-        width=1200,
-        barmode="group",
-        legend_title_text="Group",
-        margin=dict(l=40, r=20, t=60, b=40)
-    )
-
-    fig.update_xaxes(title_text="NOC", row=1, col=1)
-    fig.update_yaxes(title_text="Medals (count)", row=1, col=1)
-    fig.update_xaxes(title_text="Age", row=1, col=2)
-    fig.update_yaxes(title_text="Count", row=1, col=2)
-    fig.update_xaxes(title_text="Age", row=1, col=3)
-    fig.update_yaxes(title_text="Count", row=1, col=3)
-
     return fig
