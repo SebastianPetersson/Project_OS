@@ -464,10 +464,14 @@ def medal_e_v_ger(east_germany, west_germany):
         xaxis3 = dict(tickangle = 45)
     )
     return fig
+import pandas as pd
+import numpy as np
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 
-def sex_biat(olympics_df: pd.DataFrame):
+def sex_biat(olympics_df: pd.DataFrame, sport: str = "Biathlon"):
     """
-    Visualize Biathlon medal winners separated by gender:
+    Visualize medal winners separated by gender for a given sport:
     - Bar chart: medal counts per NOC split by Sex
     - Histogram: Age distribution of male vs female medalists
     Returns a Plotly figure.
@@ -479,21 +483,17 @@ def sex_biat(olympics_df: pd.DataFrame):
     if missing:
         raise ValueError(f"Input dataframe saknar kolumner: {', '.join(sorted(missing))}")
 
-    # Filtrera: Biathlon + medaljtagare
-    biat = olympics_df.loc[olympics_df["Sport"] == "Biathlon"].copy()
-    biat = biat.dropna(subset=["Medal", "Sex", "NOC"])  # medaljer och nyckelfält måste finnas
+    # Filtrera: vald sport + medaljtagare
+    sport_df = olympics_df.loc[olympics_df["Sport"] == sport].copy()
+    sport_df = sport_df.dropna(subset=["Medal", "Sex", "NOC"])
 
     # Dela upp efter kön
-    m_biat = biat.loc[biat["Sex"] == "M"].copy()
-    f_biat = biat.loc[biat["Sex"] == "F"].copy()
-
-    # Hantera ålder (ta bort NaN för histogram)
-    m_biat = m_biat.dropna(subset=["Age"])
-    f_biat = f_biat.dropna(subset=["Age"])
+    m_df = sport_df.loc[sport_df["Sex"] == "M"].dropna(subset=["Age"])
+    f_df = sport_df.loc[sport_df["Sex"] == "F"].dropna(subset=["Age"])
 
     # Grupp för NOC x Sex (medaljantal)
     noc_counts = (
-        biat.groupby(["NOC", "Sex"])
+        sport_df.groupby(["NOC", "Sex"])
         .size()
         .reset_index(name="count")
         .sort_values(["NOC", "Sex"])
@@ -504,86 +504,61 @@ def sex_biat(olympics_df: pd.DataFrame):
         rows=1, cols=3,
         column_widths=[0.42, 0.29, 0.29],
         subplot_titles=[
-            "Biathlon medals by NOC and gender",
-            "Age distribution — male medalists",
-            "Age distribution — female medalists"
+            f"{sport} medals by NOC and gender",
+            f"Age distribution — male medalists ({sport})",
+            f"Age distribution — female medalists ({sport})"
         ]
     )
 
-    # 1) Staplar per NOC uppdelat på kön (grupperade staplar)
-    # För konsekvent färg: M=grey, F=orange
+    # 1) Staplar per NOC uppdelat på kön
     noc_list = sorted(noc_counts["NOC"].unique())
     m_counts = noc_counts[noc_counts["Sex"] == "M"].set_index("NOC").reindex(noc_list)["count"].fillna(0)
     f_counts = noc_counts[noc_counts["Sex"] == "F"].set_index("NOC").reindex(noc_list)["count"].fillna(0)
 
     fig.add_trace(
-        go.Bar(
-            x=noc_list,
-            y=m_counts,
-            name="Male",
-            marker_color="grey",
-            hovertemplate="NOC=%{x}<br>Medals=%{y}<extra></extra>"
-        ),
+        go.Bar(x=noc_list, y=m_counts, name="Male", marker_color="grey",
+               hovertemplate="NOC=%{x}<br>Medals=%{y}<extra></extra>"),
         row=1, col=1
     )
     fig.add_trace(
-        go.Bar(
-            x=noc_list,
-            y=f_counts,
-            name="Female",
-            marker_color="orange",
-            hovertemplate="NOC=%{x}<br>Medals=%{y}<extra></extra>"
-        ),
+        go.Bar(x=noc_list, y=f_counts, name="Female", marker_color="orange",
+               hovertemplate="NOC=%{x}<br>Medals=%{y}<extra></extra>"),
         row=1, col=1
     )
 
     # 2) Histogram för män
     fig.add_trace(
-        go.Histogram(
-            x=m_biat["Age"],
-            nbinsx=20,
-            marker_color="grey",
-            name="Male ages",
-            hovertemplate="Age=%{x}<br>Count=%{y}<extra></extra>"
-        ),
+        go.Histogram(x=m_df["Age"], nbinsx=20, marker_color="grey", name="Male ages",
+                     hovertemplate="Age=%{x}<br>Count=%{y}<extra></extra>"),
         row=1, col=2
     )
 
     # 3) Histogram för kvinnor
     fig.add_trace(
-        go.Histogram(
-            x=f_biat["Age"],
-            nbinsx=20,
-            marker_color="orange",
-            name="Female ages",
-            hovertemplate="Age=%{x}<br>Count=%{y}<extra></extra>"
-        ),
+        go.Histogram(x=f_df["Age"], nbinsx=20, marker_color="orange", name="Female ages",
+                     hovertemplate="Age=%{x}<br>Count=%{y}<extra></extra>"),
         row=1, col=3
     )
 
-    # Medelålder-linjer (om data finns)
-    if len(m_biat) > 0:
-        m_mean = float(np.nanmean(m_biat["Age"]))
-        fig.add_vline(
-            x=m_mean, line_dash="dash", line_color="black",
-            annotation_text=f"Mean: {m_mean:.1f}", annotation_position="top right",
-            row=1, col=2
-        )
-    if len(f_biat) > 0:
-        f_mean = float(np.nanmean(f_biat["Age"]))
-        fig.add_vline(
-            x=f_mean, line_dash="dash", line_color="black",
-            annotation_text=f"Mean: {f_mean:.1f}", annotation_position="top right",
-            row=1, col=3
-        )
+    # Medelålder-linjer
+    if len(m_df) > 0:
+        m_mean = float(np.nanmean(m_df["Age"]))
+        fig.add_vline(x=m_mean, line_dash="dash", line_color="black",
+                      annotation_text=f"Mean: {m_mean:.1f}", annotation_position="top right",
+                      row=1, col=2)
+    if len(f_df) > 0:
+        f_mean = float(np.nanmean(f_df["Age"]))
+        fig.add_vline(x=f_mean, line_dash="dash", line_color="black",
+                      annotation_text=f"Mean: {f_mean:.1f}", annotation_position="top right",
+                      row=1, col=3)
 
     # Layout och axlar
     fig.update_layout(
-        title_text="Biathlon medalists — gender and age",
+        title_text=f"{sport} medalists — gender and age",
         title_x=0.5,
         height=500,
         width=1200,
-        barmode="group",   # grupperade staplar M/F per NOC
+        barmode="group",
         legend_title_text="Group",
         margin=dict(l=40, r=20, t=60, b=40)
     )
