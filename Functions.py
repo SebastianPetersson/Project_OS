@@ -133,17 +133,14 @@ def sex_dist_all(df):
 
 #Sebastian
 def sex_dist_divided(df, years):
-    """Creates a 2-row subplot of pie charts showing gender distribution for selected Olympic years."""
+    """Creates a 2-row subplot of pie charts showing gender distribution for selected Olympic years. More or less years can be selected."""
 
     east_germany = df[df['NOC'] == 'GDR'].copy()
     west_germany = df[df['NOC'] == 'FRG'].copy()
 
-    specs = [[{'type': 'domain'}] * len(years) for _ in range(2)]
-
     fig = make_subplots(
-        rows=2,
-        cols=len(years),
-        specs=specs,
+        rows=2, cols=len(years),
+        specs=[[{'type': 'domain'}]*len(years)]*2,
         subplot_titles=[f'FRG {year}' for year in years] + [f'GDR {year}' for year in years]
     )
 
@@ -256,7 +253,7 @@ def age_dist_per_sex(global_df, germany_df, country, sport):
     return fig
 
 #Sebastian #Note: Något skevt händer. Gör en temporär fix längst ned.
-def plot_efficiency_original(global_df, germany_df, country, sport):
+def plot_efficiency(global_df, germany_df, country, sport):
     """Plots the efficiency of the selected countrys contenders in the selected sport, and gives a comparison to the global efficiency. \n
     Input one global dataframe, one dataframe for the country and the selected sport."""
 
@@ -283,7 +280,7 @@ def plot_efficiency_original(global_df, germany_df, country, sport):
     return fig
 
 #Sebastian #Note: Något skevt händer även här. Gör en temporät fix längst ned.
-def medal_distribution_original(df, sport): #EGEN note: denna ska göras till dropdown-meny, så att användaren kan välja olika länder!
+def medal_distribution(df, sport): #EGEN note: denna ska göras till dropdown-meny, så att användaren kan välja olika länder!
     """Creates an interactive bar chart of medal counts per country for a given sport using Plotly."""
     palette = {
         'Gold': "#DABE1E",
@@ -587,27 +584,3 @@ def sex_biat(olympics_df: pd.DataFrame):
     fig.update_yaxes(title_text="Count", row=1, col=3)
 
     return fig
-
-
-
-
-
-#Temprär fix för originalet högre upp.
-def plot_efficiency(global_df, germany_df, country, sport):
-    global_df = global_df[global_df['Sport']==sport]
-    german_men = germany_df[(germany_df['Sport']==sport)&(germany_df['Sex']=='M')]
-    german_women = germany_df[(germany_df['Sport']==sport)&(germany_df['Sex']=='F')]
-    global_eff = global_df['Medal'].notna().sum()/len(global_df)*100
-    male_eff = german_men['Medal'].notna().sum()/len(german_men)*100
-    female_eff = german_women['Medal'].notna().sum()/len(german_women)*100
-    df = pd.DataFrame({'Group':['Men','Women','Global'],
-                       'Efficiency':[male_eff,female_eff,global_eff]})
-    fig = px.bar(df, x='Group', y='Efficiency', text=df['Efficiency'].round(1))
-    return fig
-
-#Temporär fix för originalet högre upp.
-def medal_distribution(df, sport):
-    df = df[(df['Sport']==sport)&(df['Medal'].notna())]
-    medals = df.groupby(['NOC','Medal']).size().reset_index(name='Count')
-    fig = px.bar(medals, x='NOC', y='Count', color='Medal', barmode='stack')
-    return fig, medals

@@ -13,12 +13,12 @@ fig1, _ = Functions.top_german_sports(germany)
 fig2, _ = Functions.medals_each_year(df, ["GER", "FRG", "GDR"], "German Olympic Medals per Year")
 fig3, _ = Functions.plot_participants(germany_all)
 fig4 = Functions.plot_age_distribution(germany)
-fig5 = Functions.plot_efficiency(df, germany, "Germany", "Ski Jumping")
-fig6, _ = Functions.summer_vs_winter(df)
-fig7 = Functions.sex_dist_divided(germany_all, [1968, 1972, 1980, 1988])
-fig8 = Functions.sex_dist_all(df)
-fig9 = Functions.medal_e_v_ger(df[df["NOC"] == "GDR"], df[df["NOC"] == "FRG"])
-fig10, _ = Functions.medal_distribution(df, "Ski Jumping")
+fig5, _ = Functions.summer_vs_winter(df)
+fig6 = Functions.sex_dist_divided(germany_all, [1968, 1972, 1980, 1988])
+fig7 = Functions.sex_dist_all(df)
+fig8 = Functions.medal_e_v_ger(df[df["NOC"] == "GDR"], df[df["NOC"] == "FRG"])
+fig9 = Functions.plot_efficiency(df, germany, "Germany", "Ski Jumping")
+fig10 = Functions.medal_distribution(df, "Ski Jumping")
 fig11 = Functions.age_dist_per_sex(df, germany, "Germany", "Ski Jumping")
 #fig12, _ = Functions.stats_for_country(df, "Germany")
 fig13, _ = Functions.stats_for_sport(df, "Ski Jumping")
@@ -35,7 +35,7 @@ layout = html.Div([
     dcc.Graph(figure = fig3),
     dcc.Graph(figure = fig4),
     dcc.Graph(figure = fig5),
-    dcc.Graph(figure = fig6), #Buggar sidan så endast denna visas.
+    dcc.Graph(figure = fig6),
     dcc.Graph(figure = fig7),
     dcc.Graph(figure = fig8),
     dcc.Graph(figure = fig9),
