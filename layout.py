@@ -35,11 +35,10 @@ layout = html.Div([
     dcc.Graph(figure = fig3),
     dcc.Graph(figure = fig4),
     dcc.Graph(figure = fig5),
-
     dcc.Graph(figure = fig6),
     dcc.Graph(figure = fig7),
     dcc.Graph(figure = fig8),
-    dcc.Graph(figure = fig9), #Buggar sidan så endast denna visas.
+    dcc.Graph(figure = fig9),
     dcc.Graph(figure = fig10), #Får bara felmeddelande.
 
     html.H2("Uppgift 2 - Sportstatistik", style = {"fontFamily": "Helvetica", "color": "black"}),

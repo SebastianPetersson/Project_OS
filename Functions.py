@@ -6,6 +6,7 @@ import plotly
 import plotly.express as px
 from plotly.subplots import make_subplots
 import plotly.graph_objects as go
+import numpy as np
 
 
 #Funktion för Uppgift 1: Anonymisera kolumnen med idrottarnas namn.
@@ -51,7 +52,7 @@ def medals_each_year(olympics_df, noc_list, title):
     fig.update_layout(xaxis_tickangle = -45, legend_title = "Country Code")
     return fig, medals_breakdown
 
-# Funktion för uppgift 1: Histogram över åldrar
+#Lucas
 def plot_age_distribution(germany):
     df = germany[germany["Age"].notna()]
 
