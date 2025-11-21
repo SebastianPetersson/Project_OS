@@ -38,8 +38,6 @@ layout = html.Div([
     dcc.Graph(figure = fig6),
     dcc.Graph(figure = fig7),
     dcc.Graph(figure = fig8),
-    dcc.Graph(figure = fig9),
-    dcc.Graph(figure = fig10),
 
     html.H2("Uppgift 2 - Sportstatistik", style = {"fontFamily": "Helvetica", "color": "black"}),
 
@@ -56,6 +54,8 @@ layout = html.Div([
         style = {"width": "50%", "margin": "20px auto"}
     ),
 
+    dcc.Graph(id = "efficiency-graph"),
+    dcc.Graph(id = "medal-dist-graph"),
     dcc.Graph(id = "age-graph"),
     dcc.Graph(id = "sport-stats-graph"),
     dcc.Graph(id = "weight-height-graph"),
