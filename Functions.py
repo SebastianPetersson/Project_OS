@@ -279,7 +279,7 @@ def plot_efficiency(global_df, germany_df, country, sport):
     return fig
 
 #Sebastian #Note: Något skevt händer även här. Gör en temporät fix längst ned.
-def medal_distribution_original(df, sport): #EGEN note: denna ska göras till dropdown-meny, så att användaren kan välja olika länder!
+def medal_distribution(df, sport): #EGEN note: denna ska göras till dropdown-meny, så att användaren kan välja olika länder!
     """Creates an interactive bar chart of medal counts per country for a given sport using Plotly."""
     palette = {
         'Gold': "#DABE1E",
@@ -465,10 +465,3 @@ def medal_e_v_ger(east_germany, west_germany):
         xaxis3 = dict(tickangle = 45)
     )
     return fig
-
-#Temporär fix för originalet högre upp.
-def medal_distribution(df, sport):
-    df = df[(df['Sport']==sport)&(df['Medal'].notna())]
-    medals = df.groupby(['NOC','Medal']).size().reset_index(name='Count')
-    fig = px.bar(medals, x='NOC', y='Count', color='Medal', barmode='stack')
-    return fig, medals
