@@ -1,28 +1,24 @@
 from dash import html, dcc
 import pandas as pd
 import Functions
+from load_data import load_and_clean_data
 
-df = pd.read_csv("athlete_events.csv")
-noc = pd.read_csv("noc_regions.csv")
-df = df.merge(noc, on = "NOC", how = "left")
-
-
-germany, germany_all = Functions.hashed_names(df)
+olympics, germany_all, germany = load_and_clean_data()
 
 fig1, _ = Functions.top_german_sports(germany)
-fig2, _ = Functions.medals_each_year(df, ["GER", "FRG", "GDR"], "German Olympic Medals per Year")
+fig2, _ = Functions.medals_each_year(olympics, ["GER", "FRG", "GDR"], "German Olympic Medals per Year")
 fig3, _ = Functions.plot_participants(germany_all)
 fig4 = Functions.plot_age_distribution(germany)
-fig5, _ = Functions.summer_vs_winter(df)
+fig5, _ = Functions.summer_vs_winter(olympics)
 fig6 = Functions.sex_dist_divided(germany_all, [1968, 1972, 1980, 1988])
-fig7 = Functions.sex_dist_all(df)
-fig8 = Functions.medal_e_v_ger(df[df["NOC"] == "GDR"], df[df["NOC"] == "FRG"])
-fig9 = Functions.plot_efficiency(df, germany, "Germany", "Ski Jumping")
-fig10 = Functions.medal_distribution(df, "Ski Jumping")
-fig11 = Functions.age_dist_per_sex(df, germany, "Germany", "Ski Jumping")
-fig12, _ = Functions.stats_for_sport(df, "Ski Jumping")
-fig13, _ = Functions.medal_distribution_weight_height(df, sport = "Ski Jumping")
-fig14 = Functions.sex_biat(df)
+fig7 = Functions.sex_dist_all(olympics)
+fig8 = Functions.medal_e_v_ger(olympics[olympics["NOC"] == "GDR"], olympics[olympics["NOC"] == "FRG"])
+fig9 = Functions.plot_efficiency(olympics, germany, "Germany", "Ski Jumping")
+fig10 = Functions.medal_distribution(olympics, "Ski Jumping")
+fig11 = Functions.age_dist_per_sex(olympics, germany, "Germany", "Ski Jumping")
+fig12, _ = Functions.stats_for_sport(olympics, "Ski Jumping")
+fig13, _ = Functions.medal_distribution_weight_height(olympics, sport = "Ski Jumping")
+fig14 = Functions.sex_biat(olympics)
 
 
 layout = html.Div([

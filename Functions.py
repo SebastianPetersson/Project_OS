@@ -6,16 +6,6 @@ from plotly.subplots import make_subplots
 import plotly.graph_objects as go
 import numpy as np
 
-
-#Funktion för Uppgift 1: Anonymisera kolumnen med idrottarnas namn.
-def hashed_names(olympics_df):
-    """Anonymizes the column named 'Names' in the selected column. Input your dataframe as is."""
-    germany_all = olympics_df[olympics_df["NOC"].isin(["GER", "GDR", "FRG"])].copy()
-    germany_all["Name"] = germany_all["Name"].apply(lambda x: hashlib.sha256(x.encode("utf-8")).hexdigest())
-    germany_all = germany_all.rename(columns = {"Name": "Hash_Names"}).reset_index(drop = True)
-    germany = germany_all[germany_all["NOC"] == "GER"]
-    return germany, germany_all
-
 def top_german_sports(germany_df, top_n = 10):
     """Makes a barplot showing which sports that Germany has won the most medals in. It filters the DataFrame
     to include only rows with non-null medals and groups the data by sport. And selects the top N sports."""
@@ -234,7 +224,7 @@ def age_dist_per_sex(global_df, germany_df, country, sport):
     fig.add_vline(x=men_mean, line_dash='dash', line_color='black',
                   annotation_text=f"Men mean: {men_mean:.1f}", annotation_position="top right", row=1, col=1)
     fig.add_vline(x=women_mean, line_dash='dash', line_color='orange',
-                  annotation_text=f"Women mean: {women_mean:.1f}", annotation_position="top left", row=1, col=1)
+                  annotation_text=f"Women mean: {women_mean:.1f}", annotation_position="left", row=1, col=1)
     fig.add_vline(x=global_mean, line_dash='dash', line_color='blue',
                   annotation_text=f"Global mean: {global_mean:.1f}", annotation_position="top right", row=1, col=2)
 
